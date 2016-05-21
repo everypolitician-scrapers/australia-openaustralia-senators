@@ -73,7 +73,6 @@ def scrape_list(url)
       end_date: mem.attr('todate').sub('0015-','2015-'), # https://github.com/openaustralia/openaustralia/issues/597
     }
 
-    binding.pry if person[:name].include? 'Penny'
     @terms.each do |term|
       range = overlap(mem, term) or next
       row = person.merge(range).merge({ term: term[:id] })
