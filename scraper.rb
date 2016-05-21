@@ -76,7 +76,6 @@ def scrape_list(url)
     @terms.each do |term|
       range = overlap(mem, term) or next
       row = person.merge(range).merge({ term: term[:id] })
-      warn row
       ScraperWiki.save_sqlite([:id, :term, :start_date], row)
     end
 
