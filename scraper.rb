@@ -101,4 +101,5 @@ ScraperWiki.save_sqlite([:id], @terms, 'terms')
 @aphinfo = noko_for('http://data.openaustralia.org/members/websites.xml')
 @wp_link = noko_for('http://data.openaustralia.org/members/wikipedia-commons.xml')
 
+ScraperWiki.sqliteexecute('DELETE FROM data') rescue nil
 scrape_list('http://data.openaustralia.org/members/senators.xml')
