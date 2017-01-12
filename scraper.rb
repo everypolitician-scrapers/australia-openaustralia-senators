@@ -2,6 +2,7 @@
 # encoding: utf-8
 # frozen_string_literal: true
 
+require 'csv'
 require 'pry'
 require 'scraped'
 require 'scraperwiki'
@@ -72,23 +73,9 @@ def scrape_list(url)
   end
 end
 
-require 'csv'
-termdates = <<EODATA
-id,name,start_date,end_date
-35,35th Parliament,1987-07-11,1990-03-24
-36,36th Parliament,1990-03-24,1993-03-13
-37,37th Parliament,1993-03-13,1996-03-02
-38,38th Parliament,1996-03-02,1998-10-03
-39,39th Parliament,1998-10-03,2001-11-10
-40,40th Parliament,2001-11-10,2004-10-09
-41,41st Parliament,2004-10-09,2007-11-24
-42,42nd Parliament,2007-11-24,2010-08-21
-43,43rd Parliament,2010-08-21,2013-09-07
-44,44th Parliament,2013-09-07,2016-05-09
-45,45th Parliament,2016-07-02,
-EODATA
+termdates = open('https://raw.githubusercontent.com/everypolitician/everypolitician-data/'\
+                  'master/data/Australia/Senate/sources/manual/terms.csv').read
 @terms = CSV.parse(termdates, headers: true, header_converters: :symbol).map(&:to_hash)
-ScraperWiki.save_sqlite([:id], @terms, 'terms')
 
 @persons = noko_for('http://data.openaustralia.org/members/people.xml')
 @aphinfo = noko_for('http://data.openaustralia.org/members/websites.xml')
