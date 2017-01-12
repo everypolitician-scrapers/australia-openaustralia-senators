@@ -6,26 +6,13 @@ require 'csv'
 require 'pry'
 require 'scraped'
 require 'scraperwiki'
+require 'combine_popolo_memberships'
 
 require 'open-uri/cached'
 OpenURI::Cache.cache_path = '.cache'
 
 def noko_for(url)
   Nokogiri::XML(open(url).read)
-end
-
-def overlap(mem, term)
-  mS = mem[:start_date].to_s.empty?  ? '0000-00-00' : mem[:start_date]
-  mE = mem[:end_date].to_s.empty?    ? '9999-12-31' : mem[:end_date]
-  tS = term[:start_date].to_s.empty? ? '0000-00-00' : term[:start_date]
-  tE = term[:end_date].to_s.empty?   ? '9999-12-31' : term[:end_date]
-
-  return unless mS < tE && mE > tS
-  (s, e) = [mS, mE, tS, tE].sort[1, 2]
-  {
-    start_date: s == '0000-00-00' ? nil : s,
-    end_date:   e == '9999-12-31' ? nil : e,
-  }
 end
 
 def scrape_list(url)
@@ -53,6 +40,8 @@ def scrape_list(url)
       area:        mem.attr('division'),
       party:       mem.attr('party'),
       source:      url,
+      start_date:  mem.attr('fromdate'),
+      end_date:    mem.attr('todate').sub('9999-12-31', ''),
     }.merge(aph_data)
 
     unless (wp = @wp_link.xpath("//personinfo[@id='#{id}']")).empty?
@@ -60,16 +49,8 @@ def scrape_list(url)
       person[:wikipedia_name] = wp.attr('wikipedia_url').text.split('/').last.tr('_', ' ')
     end
 
-    mem = {
-      start_date: mem.attr('fromdate'),
-      end_date:   mem.attr('todate').sub('0015-', '2015-'), # https://github.com/openaustralia/openaustralia/issues/597
-    }
-
-    @terms.each do |term|
-      range = overlap(mem, term) or next
-      row = person.merge(range).merge(term: term[:id])
-      ScraperWiki.save_sqlite(%i(id term start_date), row)
-    end
+    data = CombinePopoloMemberships.combine(id: [person], term: @terms)
+    ScraperWiki.save_sqlite(%i(id term start_date), data)
   end
 end
 
