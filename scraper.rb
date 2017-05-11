@@ -62,5 +62,5 @@ termdates = open('https://raw.githubusercontent.com/everypolitician/everypolitic
 @aphinfo = noko_for('http://data.openaustralia.org/members/websites.xml')
 @wp_link = noko_for('http://data.openaustralia.org/members/wikipedia-commons.xml')
 
-ScraperWiki.sqliteexecute('DELETE FROM data') rescue nil
+ScraperWiki.sqliteexecute('DROP TABLE data') rescue nil
 scrape_list('http://data.openaustralia.org/members/senators.xml')
